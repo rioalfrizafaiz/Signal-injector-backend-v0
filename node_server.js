@@ -8,6 +8,7 @@ var moment = require('moment');
 
 //library serial communication
 var serialport = require('serialport');
+
 /************************ Deklarasi objek/variabel ***************************/
 // terkait firestore (cloud firestore di dalam google firebase)
 admin.initializeApp({
@@ -15,11 +16,6 @@ admin.initializeApp({
     databaseURL: "https://test-db-4aa92.firebaseio.com"
 });
 
-var dummyBuffer = {
-    Data: [],
-    Timestamp: []
-}
-  
 const dataLimit = 100;
 
 // terkait serial comm
@@ -227,20 +223,50 @@ var firestoreDataBuffer = {
     }
 }
 
-/************************ Deklarasi fungsi/event ***************************/
-function getRndFloat(min, max, decnumber) {
-    return parseFloat(((Math.random() * (max - min + 1)) + min).toFixed(decnumber));
-}
-
-function GenerateRandom(currentbuffer) {
-    for (var i = 0; i < 256; i++) {
-        currentbuffer.data[i] = getRndInteger(800, 1500);
+var firestoreOutputDataBuffer = {
+    SI_1_DO:{
+        DO_1:0,
+        DO_2:0,
+        DO_3:0,
+        DO_4:0,
+        DO_5:0,
+        DO_6:0,
+        DO_7:0,
+        DO_8:0
+    },
+    SI_1_AO:{
+        AO_1:0,
+        AO_2:0,
+        AO_3:0,
+        AO_4:0,
+        AO_5:0,
+        AO_6:0,
+        AO_7:0,
+        AO_8:0
+    },
+    SI_2_DO:{
+        DO_1:0,
+        DO_2:0,
+        DO_3:0,
+        DO_4:0,
+        DO_5:0,
+        DO_6:0,
+        DO_7:0,
+        DO_8:0
+    },
+    SI_2_AO:{
+        AO_1:0,
+        AO_2:0,
+        AO_3:0,
+        AO_4:0,
+        AO_5:0,
+        AO_6:0,
+        AO_7:0,
+        AO_8:0
     }
-    currentbuffer.timestamp = String(moment().format('hh:mm:ss'));
-
-    return currentbuffer;
 }
 
+/************************ Deklarasi fungsi/event ***************************/
 /*
 firestore.collection('Baterai-Monitoring-V0').doc('Current').get()
     .then((doc) => {
@@ -266,13 +292,9 @@ function storeBuffer(currentBuff, Buff, Timestamp) {
 }
 
 function MainLoop() {
-    // -------------------------------------------- MULAI EDIT DI SINI
+    // -------------------------------------------- DATA INPUT KE FIRESTORE: MULAI EDIT DI SINI
 
     firestore.collection('Signal_Injector').doc('SI_1_DI').set(firestoreDataBuffer.SI_1_DI)
-    .catch((error) => {
-        console.error("Error adding document: ", error);
-    });
-    firestore.collection('Signal_Injector').doc('SI_1_DO').set(firestoreDataBuffer.SI_1_DO)
     .catch((error) => {
         console.error("Error adding document: ", error);
     });
@@ -280,15 +302,7 @@ function MainLoop() {
     .catch((error) => {
         console.error("Error adding document: ", error);
     });
-    firestore.collection('Signal_Injector').doc('SI_1_AO').set(firestoreDataBuffer.SI_1_AO)
-    .catch((error) => {
-        console.error("Error adding document: ", error);
-    });
     firestore.collection('Signal_Injector').doc('SI_2_DI').set(firestoreDataBuffer.SI_2_DI)
-    .catch((error) => {
-        console.error("Error adding document: ", error);
-    });
-    firestore.collection('Signal_Injector').doc('SI_2_DO').set(firestoreDataBuffer.SI_2_DO)
     .catch((error) => {
         console.error("Error adding document: ", error);
     });
@@ -296,10 +310,39 @@ function MainLoop() {
     .catch((error) => {
         console.error("Error adding document: ", error);
     });
-    firestore.collection('Signal_Injector').doc('SI_2_AO').set(firestoreDataBuffer.SI_2_AO)
+
+    // -------------------------------------------- DATA OUTPUT DARI FIRESTORE: MULAI EDIT DI SINI
+    firestore.collection('Signal_Injector').doc('SI_1_DO').get()
+    .then(function(doc){
+        firestoreOutputDataBuffer.SI_1_DO = doc.data();
+        console.log(firestoreOutputDataBuffer.SI_1_DO)
+    })
     .catch((error) => {
         console.error("Error adding document: ", error);
     });
+    firestore.collection('Signal_Injector').doc('SI_1_AO').get()
+    .then(function(doc){
+        firestoreOutputDataBuffer.SI_1_AO = doc.data();
+    })
+    .catch((error) => {
+        console.error("Error adding document: ", error);
+    });
+    firestore.collection('Signal_Injector').doc('SI_2_DO').get()
+    .then(function(doc){
+        firestoreOutputDataBuffer.SI_2_DO = doc.data();
+    })
+    .catch((error) => {
+        console.error("Error adding document: ", error);
+    });
+    firestore.collection('Signal_Injector').doc('SI_2_AO').get()
+    .then(function(doc){
+        firestoreOutputDataBuffer.SI_2_AO = doc.data();
+    })
+    .catch((error) => {
+        console.error("Error adding document: ", error);
+    });
+    // -------------------------------------------- DATA OUTPUT DARI FIRESTORE: STOP EDIT DI SINI
+    // nama variabelnya firestoreOutputDataBuffer. Bisa diambil key-key nya
 
     
 }
